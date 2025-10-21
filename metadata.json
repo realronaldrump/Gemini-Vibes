@@ -1,0 +1,5 @@
+{
+  "name": "Bouncie Neon Trails",
+  "description": "An application to retrieve and visualize your Bouncie driving trips on a neon-lit map. Select a date range to see your driving history as glowing trails, with frequently traveled routes shining brighter.",
+  "requestFramePermissions": []
+}
