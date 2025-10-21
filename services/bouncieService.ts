@@ -17,8 +17,8 @@ async function handleResponse<T,>(response: Response): Promise<T> {
 export async function fetchVehicles(accessToken: string): Promise<Vehicle[]> {
   const response = await fetch(`${API_BASE_URL}/vehicles`, {
     headers: {
-      // The Authorization header still uses the real token
-      'Authorization': `${accessToken}`,
+      // The Authorization header now includes the "Bearer " prefix
+      'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
   });
@@ -40,7 +40,8 @@ export async function fetchTrips(
 
   const response = await fetch(`${API_BASE_URL}/trips?${params.toString()}`, {
     headers: {
-      'Authorization': `${accessToken}`,
+      // The Authorization header now includes the "Bearer " prefix
+      'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
   });
