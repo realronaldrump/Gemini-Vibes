@@ -2,20 +2,22 @@
 import React, { useState, useMemo } from 'react';
 
 interface CredentialsFormProps {
-  onConnect: (clientId: string, clientSecret: string) => void;
   error?: string | null;
 }
 
-const CredentialsForm: React.FC<CredentialsFormProps> = ({ onConnect, error }) => {
+const CredentialsForm: React.FC<CredentialsFormProps> = ({ error }) => {
   const [clientId, setClientId] = useState('');
   const [clientSecret, setClientSecret] = useState('');
   const [copied, setCopied] = useState(false);
+  const [authUrl, setAuthUrl] = useState<string | null>(null);
 
   const redirectUri = useMemo(() => {
-    // This is safe client-side
-    return window.location.origin + window.location.pathname;
+    // In some sandboxed environments, window.location.href can be a blob URL.
+    // window.location.origin provides the stable, real origin which Bouncie needs
+    // for an exact match.
+    return window.location.origin;
   }, []);
-
+  
   const handleCopy = () => {
     navigator.clipboard.writeText(redirectUri).then(() => {
       setCopied(true);
@@ -26,9 +28,44 @@ const CredentialsForm: React.FC<CredentialsFormProps> = ({ onConnect, error }) =
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (clientId.trim() && clientSecret.trim()) {
-      onConnect(clientId.trim(), clientSecret.trim());
+      const state = Math.random().toString(36).substring(2);
+      
+      localStorage.setItem('bouncieClientId', clientId.trim());
+      localStorage.setItem('bouncieClientSecret', clientSecret.trim());
+      localStorage.setItem('bouncieOauthState', state);
+
+      const params = new URLSearchParams({
+        client_id: clientId.trim(),
+        response_type: 'code',
+        redirect_uri: redirectUri,
+        state: state
+      });
+      
+      const url = `https://auth.bouncie.com/dialog/authorize?${params.toString()}`;
+      setAuthUrl(url);
     }
   };
+
+  if (authUrl) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white p-4">
+        <div className="w-full max-w-lg p-8 space-y-8 bg-gray-800 rounded-2xl shadow-2xl text-center">
+          <h2 className="text-2xl font-bold text-cyan-400">Redirecting to Bouncie...</h2>
+          <p className="mt-2 text-gray-400">
+            Please click the button below to complete the authorization.
+          </p>
+          <a
+            href={authUrl}
+            target="_top"
+            className="mt-6 inline-block w-full text-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500"
+          >
+            Authorize with Bouncie
+          </a>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white p-4">

@@ -40,7 +40,11 @@ const App: React.FC = () => {
       localStorage.removeItem('bouncieOauthState');
       
       if (clientId && clientSecret) {
-        const redirectUri = window.location.origin + window.location.pathname;
+        // This MUST exactly match the redirect_uri sent to the authorize endpoint.
+        // Using window.location.origin is the most robust way to get a stable
+        // URL in sandboxed/iframe environments.
+        const redirectUri = window.location.origin;
+
         exchangeCodeForToken(code, clientId, clientSecret, redirectUri)
           .then(token => {
             localStorage.setItem('bouncieAccessToken', token);
@@ -106,27 +110,11 @@ const App: React.FC = () => {
     getVehicles();
   }, [accessToken]);
 
-  const handleConnect = (clientId: string, clientSecret: string) => {
-    localStorage.setItem('bouncieClientId', clientId);
-    localStorage.setItem('bouncieClientSecret', clientSecret);
-
-    const redirectUri = window.location.origin + window.location.pathname;
-    const state = Math.random().toString(36).substring(2);
-    localStorage.setItem('bouncieOauthState', state);
-
-    const params = new URLSearchParams({
-      client_id: clientId,
-      response_type: 'code',
-      redirect_uri: redirectUri,
-      state: state
-    });
-
-    window.location.href = `https://auth.bouncie.com/dialog/authorize?${params.toString()}`;
-  };
-
   const handleLogout = () => {
     localStorage.removeItem('bouncieAccessToken');
     localStorage.removeItem('bouncieClientId');
+    localStorage.removeItem('bouncieClientSecret');
+    localStorage.removeItem('bouncieOauthState');
     setAccessToken(null);
   }
 
@@ -168,7 +156,7 @@ const App: React.FC = () => {
   }
 
   if (!accessToken) {
-    return <CredentialsForm onConnect={handleConnect} error={authError} />;
+    return <CredentialsForm error={authError} />;
   }
 
   return (
