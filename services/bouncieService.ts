@@ -1,6 +1,7 @@
 import type { Vehicle, Trip } from '../types';
 
-const API_BASE_URL = 'https://api.bouncie.dev/v1';
+// Use the new API proxy path
+const API_BASE_URL = '/api/bouncie-api/v1';
 
 async function handleResponse<T,>(response: Response): Promise<T> {
   if (response.status === 401) {
@@ -16,6 +17,7 @@ async function handleResponse<T,>(response: Response): Promise<T> {
 export async function fetchVehicles(accessToken: string): Promise<Vehicle[]> {
   const response = await fetch(`${API_BASE_URL}/vehicles`, {
     headers: {
+      // The Authorization header still uses the real token
       'Authorization': `${accessToken}`,
       'Content-Type': 'application/json',
     },
@@ -51,7 +53,7 @@ export async function exchangeCodeForToken(
     clientSecret: string,
     redirectUri: string
 ): Promise<string> {
-    // This URL now points to our local Vite proxy, not directly to Bouncie
+    // This URL points to our local Vite proxy for auth
     const response = await fetch('/api/bouncie-auth/oauth/token', {
         method: 'POST',
         headers: {
@@ -77,3 +79,4 @@ export async function exchangeCodeForToken(
     }
     return tokenData.access_token;
 }
+
