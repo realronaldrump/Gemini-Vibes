@@ -1,4 +1,3 @@
-
 import type { Vehicle, Trip } from '../types';
 
 const API_BASE_URL = 'https://api.bouncie.dev/v1';
@@ -52,7 +51,8 @@ export async function exchangeCodeForToken(
     clientSecret: string,
     redirectUri: string
 ): Promise<string> {
-    const response = await fetch('https://auth.bouncie.com/oauth/token', {
+    // This URL now points to our local Vite proxy, not directly to Bouncie
+    const response = await fetch('/api/bouncie-auth/oauth/token', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

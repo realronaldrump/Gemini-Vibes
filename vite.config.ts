@@ -8,6 +8,16 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        // Add this proxy configuration
+        proxy: {
+          // Any request to /api/bouncie-auth will be forwarded to the Bouncie server
+          '/api/bouncie-auth': {
+            target: 'https://auth.bouncie.com',
+            changeOrigin: true, // Recommended for virtual hosts
+            secure: false, // Recommended for local dev
+            rewrite: (path) => path.replace(/^\/api\/bouncie-auth/, ''), // Remove the prefix
+          },
+        },
       },
       plugins: [react()],
       define: {
